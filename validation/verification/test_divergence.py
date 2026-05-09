@@ -1,6 +1,5 @@
 import pytest
 
-from validation.verification import divergence_test
 from validation.verification.divergence_test import run_verification
 
 
@@ -11,6 +10,8 @@ def test_float64_divergence_target_is_met():
 
 
 def test_cupy_backend_requires_cupy_installation(monkeypatch):
+    from validation.verification import divergence_test
+
     monkeypatch.setattr(divergence_test, "cp", None)
     with pytest.raises(RuntimeError, match="CuPy not found"):
         divergence_test.get_backend("cupy")

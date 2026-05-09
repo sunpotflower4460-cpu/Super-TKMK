@@ -73,8 +73,8 @@ def get_backend(name: str):
     return cp, "CuPy"
 
 
-def scalar_to_float(value, xp) -> float:
-    if xp.__name__ == "numpy":
+def scalar_to_float(value, backend_name: str) -> float:
+    if backend_name == "NumPy":
         return float(value)
     return float(cp.asnumpy(value))
 
@@ -104,7 +104,7 @@ def make_vector_potential(shape: Sequence[int], lengths: Sequence[float], xp, dt
     lx, ly, lz = lengths
     x, y, z = make_coordinates(shape, lengths, xp, dtype)
 
-    radius = xp.sqrt(x * x + y * y) + xp.asarray(RADIUS_EPSILON, dtype=dtype)
+    radius = xp.sqrt(x * x + y * y) + dtype(RADIUS_EPSILON)
     major_radius = TOROIDAL_MAJOR_RADIUS_RATIO * min(lx, ly)
     minor_radius = TOROIDAL_MINOR_RADIUS_RATIO * min(lx, ly)
 
@@ -160,9 +160,9 @@ def run_verification(
     bx, by, bz = curl_from_vector_potential(ax, ay, az, spacing, xp)
     div_b = divergence_from_field(bx, by, bz, spacing, xp)
 
-    max_abs = scalar_to_float(xp.max(xp.abs(div_b)), xp)
-    l2_norm = scalar_to_float(xp.sqrt(xp.mean(xp.abs(div_b) ** 2)), xp)
-    mean_abs = scalar_to_float(xp.mean(xp.abs(div_b)), xp)
+    max_abs = scalar_to_float(xp.max(xp.abs(div_b)), backend_name)
+    l2_norm = scalar_to_float(xp.sqrt(xp.mean(xp.abs(div_b) ** 2)), backend_name)
+    mean_abs = scalar_to_float(xp.mean(xp.abs(div_b)), backend_name)
 
     target = 1.0e-14 if dtype_name == "float64" else 1.0e-6
     return {
