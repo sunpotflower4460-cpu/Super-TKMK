@@ -19,7 +19,7 @@ except ImportError:  # pragma: no cover - CuPy 非導入環境向け
     cp = None
 
 
-SINGULARITY_EPSILON = 1.0e-30
+CYLINDRICAL_RADIUS_EPSILON = 1.0e-30
 TOROIDAL_MAJOR_RADIUS_RATIO = 0.30
 TOROIDAL_MINOR_RADIUS_RATIO = 0.12
 TOROIDAL_VERTICAL_SCALE = 0.35
@@ -104,7 +104,7 @@ def make_vector_potential(shape: Sequence[int], lengths: Sequence[float], xp, dt
     lx, ly, lz = lengths
     x, y, z = make_coordinates(shape, lengths, xp, dtype)
 
-    radius = xp.sqrt(x * x + y * y + xp.asarray(SINGULARITY_EPSILON, dtype=dtype))
+    radius = xp.sqrt(x * x + y * y) + xp.asarray(CYLINDRICAL_RADIUS_EPSILON, dtype=dtype)
     major_radius = TOROIDAL_MAJOR_RADIUS_RATIO * min(lx, ly)
     minor_radius = TOROIDAL_MINOR_RADIUS_RATIO * min(lx, ly)
 
