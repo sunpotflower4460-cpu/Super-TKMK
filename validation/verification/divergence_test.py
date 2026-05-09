@@ -19,7 +19,7 @@ except ImportError:  # pragma: no cover
     cp = None
 
 
-CYLINDRICAL_RADIUS_EPSILON = 1.0e-30
+RADIUS_EPSILON = 1.0e-30
 TOROIDAL_MAJOR_RADIUS_RATIO = 0.30
 TOROIDAL_MINOR_RADIUS_RATIO = 0.12
 TOROIDAL_VERTICAL_SCALE = 0.35
@@ -74,7 +74,7 @@ def get_backend(name: str):
 
 
 def scalar_to_float(value, xp) -> float:
-    if xp is np:
+    if xp.__name__ == "numpy":
         return float(value)
     return float(cp.asnumpy(value))
 
@@ -104,7 +104,7 @@ def make_vector_potential(shape: Sequence[int], lengths: Sequence[float], xp, dt
     lx, ly, lz = lengths
     x, y, z = make_coordinates(shape, lengths, xp, dtype)
 
-    radius = xp.sqrt(x * x + y * y) + xp.asarray(CYLINDRICAL_RADIUS_EPSILON, dtype=dtype)
+    radius = xp.sqrt(x * x + y * y) + xp.asarray(RADIUS_EPSILON, dtype=dtype)
     major_radius = TOROIDAL_MAJOR_RADIUS_RATIO * min(lx, ly)
     minor_radius = TOROIDAL_MINOR_RADIUS_RATIO * min(lx, ly)
 
