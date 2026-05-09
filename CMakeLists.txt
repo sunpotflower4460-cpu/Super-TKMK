@@ -61,8 +61,8 @@ set(CMAKE_CUDA_FLAGS_RELEASE "-O3 -DNDEBUG")
 # ソースディレクトリ
 # =============================================================================
 
-# 各サブモジュールを追加（CMakeLists.txt が用意された時点で有効化する）
-# add_subdirectory(src/mhd_solver)
+# 各サブモジュールを追加
+add_subdirectory(src/mhd_solver)
 # add_subdirectory(src/advection_ct)
 # add_subdirectory(src/visualization)
 
