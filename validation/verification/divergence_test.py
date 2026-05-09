@@ -19,6 +19,15 @@ except ImportError:  # pragma: no cover - CuPy 非導入環境向け
     cp = None
 
 
+SINGULARITY_EPSILON = 1.0e-30
+TOROIDAL_MAJOR_RADIUS_RATIO = 0.30
+TOROIDAL_MINOR_RADIUS_RATIO = 0.12
+TOROIDAL_VERTICAL_SCALE = 0.35
+TOROIDAL_MODULATION_AMPLITUDE = 0.08
+PERTURBATION_AMPLITUDE = 0.002
+TOROIDAL_POTENTIAL_AMPLITUDE = 0.05
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="6次精度中心差分による div B 検証")
     parser.add_argument(
@@ -95,15 +104,17 @@ def make_vector_potential(shape: Sequence[int], lengths: Sequence[float], xp, dt
     lx, ly, lz = lengths
     x, y, z = make_coordinates(shape, lengths, xp, dtype)
 
-    radius = xp.sqrt(x * x + y * y + xp.asarray(1.0e-30, dtype=dtype))
-    major_radius = 0.30 * min(lx, ly)
-    minor_radius = 0.12 * min(lx, ly)
+    radius = xp.sqrt(x * x + y * y + xp.asarray(SINGULARITY_EPSILON, dtype=dtype))
+    major_radius = TOROIDAL_MAJOR_RADIUS_RATIO * min(lx, ly)
+    minor_radius = TOROIDAL_MINOR_RADIUS_RATIO * min(lx, ly)
 
-    toroidal_ring = xp.exp(-(((radius - major_radius) / minor_radius) ** 2 + (z / 0.35) ** 2))
-    toroidal_modulation = 1.0 + 0.08 * xp.cos(2.0 * xp.pi * z / lz)
-    az = xp.asarray(0.05, dtype=dtype) * toroidal_ring * toroidal_modulation
+    toroidal_ring = xp.exp(
+        -(((radius - major_radius) / minor_radius) ** 2 + (z / TOROIDAL_VERTICAL_SCALE) ** 2)
+    )
+    toroidal_modulation = 1.0 + TOROIDAL_MODULATION_AMPLITUDE * xp.cos(2.0 * xp.pi * z / lz)
+    az = xp.asarray(TOROIDAL_POTENTIAL_AMPLITUDE, dtype=dtype) * toroidal_ring * toroidal_modulation
 
-    perturbation = xp.asarray(0.002, dtype=dtype)
+    perturbation = xp.asarray(PERTURBATION_AMPLITUDE, dtype=dtype)
     ax = perturbation * xp.sin(2.0 * xp.pi * y / ly) * xp.cos(2.0 * xp.pi * z / lz)
     ay = perturbation * xp.sin(2.0 * xp.pi * z / lz) * xp.cos(2.0 * xp.pi * x / lx)
     return ax, ay, az
