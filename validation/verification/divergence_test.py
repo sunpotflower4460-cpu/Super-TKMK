@@ -15,7 +15,7 @@ import numpy as np
 
 try:
     import cupy as cp
-except ImportError:  # pragma: no cover - CuPy 非導入環境向け
+except ImportError:  # pragma: no cover
     cp = None
 
 
@@ -65,11 +65,11 @@ def get_backend(name: str):
     if name == "numpy":
         return np, "NumPy"
     if cp is None:
-        raise RuntimeError("CuPy が見つかりません。environment.yml の CuPy 環境を利用してください。")
+        raise RuntimeError("CuPy not found. Please use the CuPy environment defined in environment.yml.")
     try:
         _ = cp.cuda.runtime.getDeviceCount()
     except cp.cuda.runtime.CUDARuntimeError as exc:  # pragma: no cover - GPU 非搭載環境向け
-        raise RuntimeError(f"CuPy バックエンドを初期化できません: {exc}") from exc
+        raise RuntimeError(f"Failed to initialize CuPy backend: {exc}") from exc
     return cp, "CuPy"
 
 
