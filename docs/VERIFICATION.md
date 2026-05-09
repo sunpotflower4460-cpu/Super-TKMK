@@ -1,75 +1,50 @@
-# 保存則・精度検証記録（VERIFICATION）
+# VERIFICATION
 
-このドキュメントは、シミュレーションの物理的正確性を保証するための検証基準・結果記録を管理する。
+この文書は、Super-TKMK の精度検証で最低限守るべき判定基準をまとめた Phase 0 の基準書である。
 
----
+## 検証項目一覧
 
-## 検証方針
-
-### 1. div B = 0 検証（最優先）
-
-磁場の発散は全タイムステップで計算・記録する。
-
-| 精度 | 目標誤差 |
-|---|---|
-| float32 | < 10⁻⁶ |
-| float64 | < 10⁻¹⁴ |
-
-検証スクリプト: [`validation/verification/divergence_test.py`](../validation/verification/divergence_test.py)
-
-### 2. エネルギー保存検証
-
-全エネルギー（運動エネルギー + 磁気エネルギー + 熱エネルギー）の時間変化を記録する。  
-理想MHD では以下の保存誤差基準を要求する：
-
-- **相対誤差**: |ΔE_total / E_total(t=0)| < 0.1%（全シミュレーション期間を通じて）
-- **評価タイミング**: 全タイムステップで記録し、シミュレーション終了時に最大値を評価する
-
-ここで ΔE_total = E_total(t) - E_total(t=0)、E_total(t=0) はシミュレーション開始時の全エネルギー。
-
-### 3. 運動量保存検証
-
-全運動量の時間変化を記録する。境界条件の影響を除いた実効誤差を評価する。
-
-### 4. 磁束保存検証（トーラス形状の場合）
-
-ポロイダル磁束・トロイダル磁束を別々に追跡する。
-
----
-
-## ベンチマーク一覧
-
-| テスト名 | 参照論文 | 検証スクリプト | 合否基準 |
+| 項目 | 目的 | 評価タイミング | 許容誤差目標 |
 |---|---|---|---|
-| Orszag-Tang Vortex | Orszag & Tang (1979) | `validation/benchmarks/orszag_tang.py` | 未定義（実装時に追加） |
-| MHD Rotor | Balsara & Spicer (1999) | `validation/benchmarks/mhd_rotor.py` | 未定義（実装時に追加） |
-| Resistive Tearing Mode | Furth et al. (1963) | `validation/benchmarks/tearing_mode.py` | 未定義（実装時に追加） |
+| div B | CT 実装と磁束保存の健全性確認 | 毎タイムステップ、および PR 前 | float64: max\|div B\| ≤ 1e-14, L2(div B) ≤ 1e-14 / float32: ≤ 1e-6 |
+| Energy conservation | 保存則の破綻検出 | 毎タイムステップで記録し、終了時に最大偏差を評価 | 理想 MHD: 相対誤差 ≤ 1e-3 |
+| Benchmark agreement | 既知解・既知結果への一致確認 | ベンチマーク実行ごと、およびマージ前 | 主要観測量の相対誤差 ≤ 5%、波形・構造の定性的破綻なし |
 
----
+## 1. div B 検証
 
-## 検証記録ログ
+- 対象スクリプト: [`validation/verification/divergence_test.py`](../validation/verification/divergence_test.py)
+- 6次精度中心差分で `div B` を評価する。
+- float64 実行時は丸め誤差レベル（~1e-14 以下）を維持することを Phase 0 の目標とする。
+- 実シミュレーションでは各タイムステップで `max|div B|` と `L2(div B)` を保存し、閾値超過時は失敗扱いとする。
 
-| 日付 | コミット | テスト | 結果 | メモ |
-|---|---|---|---|---|
-| （実装後に記録） | | | | |
+## 2. Energy conservation
 
----
+- 全エネルギー `E_total = E_kin + E_mag + E_th` を毎タイムステップ記録する。
+- 理想 MHD フェーズでは、シミュレーション全区間で
+  `|E_total(t) - E_total(0)| / E_total(0) ≤ 1e-3`
+  を満たすことを目標とする。
+- 抵抗・粘性・外部駆動を導入したフェーズでは、理論的散逸項を含む補正付き評価に切り替える。
 
-## 検証実行手順
+## 3. Benchmark agreement
+
+Phase 1 以降で以下の代表ベンチマークを順次有効化する。
+
+| ベンチマーク | 比較対象 | 合否の目安 |
+|---|---|---|
+| Orszag-Tang vortex | 密度・圧力・磁場構造、衝撃位置 | 参照解に対して主要統計量の相対誤差 ≤ 5% |
+| MHD Rotor | 回転体崩壊後の磁場・速度分布 | 参照論文と同等の波面位置、相対誤差 ≤ 5% |
+| Resistive Tearing Mode | 成長率、再結合層の厚み | 理論値または参照実装に対して相対誤差 ≤ 5% |
+
+## 実行手順
 
 ```bash
-# div B 検証
 python validation/verification/divergence_test.py
-
-# 全ベンチマーク（実装後）
 python -m pytest validation/ -v
 ```
 
----
+## 検証失敗時の確認項目
 
-## 検証失敗時の対応
-
-1. CT ソルバのフラックス計算を確認する
-2. グリッドのスタガー配置（Yee 格子）を確認する
-3. 境界条件の div B 整合性を確認する
-4. 時間積分スキームの安定性（CFL 条件）を確認する
+1. CT 更新式と磁束フラックスの符号が一致しているか
+2. スタガード配置と補間位置が設計通りか
+3. 境界条件が `div B` 制約と両立しているか
+4. 保存則モニタリングの正規化式が正しいか

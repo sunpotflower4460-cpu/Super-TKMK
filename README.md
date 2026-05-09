@@ -1,4 +1,4 @@
-# Super-TKMK
+# Super-TKMK (Accurate Toroidal MHD Hybrid)
 
 **自然な物理の正確な可視化を最優先とした、GPU上でのトーラス形状MHDシミュレーション＋リアルタイム可視化プロジェクト。**
 
@@ -39,7 +39,7 @@
 
 | Phase | 内容 | 状態 |
 |---|---|---|
-| Phase 0 | 基盤整備・正確性検証環境構築 | 🚧 進行中 |
+| Phase 0 | 基盤整備・正確性検証環境構築 | ✅ 完了 |
 | Phase 1 | 理想MHD + CT実装（低解像度トーラス） | 未着手 |
 | Phase 2 | Hybrid層（低頻度MHD + 高頻度Advection + PINO補完） | 未着手 |
 | Phase 3 | 拡張MHD（resistive → two-fluid）+ 高精度可視化 | 未着手 |
