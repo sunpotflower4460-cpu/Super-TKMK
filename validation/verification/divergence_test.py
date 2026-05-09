@@ -68,7 +68,7 @@ def get_backend(name: str):
         raise RuntimeError("CuPy not found. Please use the CuPy environment defined in environment.yml.")
     try:
         _ = cp.cuda.runtime.getDeviceCount()
-    except cp.cuda.runtime.CUDARuntimeError as exc:  # pragma: no cover - GPU 非搭載環境向け
+    except cp.cuda.runtime.CUDARuntimeError as exc:  # pragma: no cover - GPU 未搭載環境向け
         raise RuntimeError(f"Failed to initialize CuPy backend: {exc}") from exc
     return cp, "CuPy"
 
