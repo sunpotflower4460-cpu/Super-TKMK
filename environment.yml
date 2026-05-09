@@ -1,0 +1,38 @@
+name: super-tkmk
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  # Python
+  - python=3.11
+
+  # 数値計算
+  - numpy>=1.26
+  - scipy>=1.13
+
+  # PyTorch (PINO/FNO)
+  # CUDA 12.x 対応ビルドを使用する
+  - pytorch>=2.3
+  - torchvision
+  - pytorch-cuda=12.1
+
+  # データ形式
+  - h5py>=3.11          # HDF5 入出力
+  - vtk>=9.3            # VTK 可視化
+
+  # 可視化
+  - matplotlib>=3.9
+  - ipywidgets
+
+  # 開発ツール
+  - jupyter
+  - pytest>=8.2
+  - black
+  - ruff
+
+  # pip 経由でのみ取得できるパッケージ
+  - pip:
+    - neuraloperator>=0.3    # FNO / PINO 実装（neuraloperator ライブラリ）
+    - einops>=0.8            # テンソル操作ユーティリティ（FNO 用）
