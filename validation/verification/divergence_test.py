@@ -29,7 +29,7 @@ TOROIDAL_POTENTIAL_AMPLITUDE = 0.05
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="6次精度中心差分による div B 検証")
+    parser = argparse.ArgumentParser(description="6th-order central difference div B verification")
     parser.add_argument(
         "--grid",
         type=int,
@@ -68,7 +68,7 @@ def get_backend(name: str):
         raise RuntimeError("CuPy not found. Please use the CuPy environment defined in environment.yml.")
     try:
         _ = cp.cuda.runtime.getDeviceCount()
-    except cp.cuda.runtime.CUDARuntimeError as exc:  # pragma: no cover - GPU 未搭載環境向け
+    except cp.cuda.runtime.CUDARuntimeError as exc:  # pragma: no cover - for environments without GPU
         raise RuntimeError(f"Failed to initialize CuPy backend: {exc}") from exc
     return cp, "CuPy"
 
